@@ -1,0 +1,353 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid #7aa7ff;
+  outline-offset: 3px;
+}
+
+.ben-missing {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  font: 500 15px/1.5 system-ui, sans-serif;
+  background: repeating-linear-gradient(45deg, #0000 0 12px, #0000000a 12px 24px);
+}
+
+/* Theme cross-fade when the direction changes */
+/* fill "backwards" + no end keyframe: nothing stays applied after the fade, so the stage
+   never becomes a containing block for position: fixed or ScrollTrigger pins */
+.theme-stage {
+  animation: theme-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+@keyframes theme-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Direction switcher (shared, theme-neutral) ---------- */
+.theme-loading {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: #f5f3ef;
+}
+
+.theme-loading span {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 0, 0, 0.12);
+  border-top-color: rgba(0, 0, 0, 0.6);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.switcher {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 1000;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(16, 18, 24, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 20px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  font: 500 13px/1 "Inter Tight", system-ui, sans-serif;
+  color: #f2f4f8;
+  max-width: calc(100vw - 32px);
+}
+
+.switcher-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  transition: background 0.2s;
+}
+
+.switcher-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.switcher-current {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 5px 12px 5px 5px;
+  border: 0;
+  border-radius: 999px;
+  background: #f2f4f8;
+  color: #101218;
+  transition: transform 0.2s;
+}
+
+.switcher-current:hover {
+  transform: translateY(-1px);
+}
+
+.switcher-swatch {
+  display: flex;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+.switcher-swatch span {
+  flex: 1;
+}
+
+.switcher-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  text-align: left;
+}
+
+.switcher-text b {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.switcher-text small {
+  font-size: 11px;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.switcher-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(16, 18, 24, 0.08);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.switcher-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  display: grid;
+  place-items: end center;
+  padding: 16px 16px 88px;
+  background: rgba(8, 9, 12, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: sheet-in 0.25s ease both;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.switcher-panel {
+  width: min(880px, 100%);
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+  padding: 22px;
+  border-radius: 26px;
+  background: rgba(16, 18, 24, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f2f4f8;
+  font-family: "Inter Tight", system-ui, sans-serif;
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+  animation: panel-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes panel-in {
+  from {
+    transform: translateY(24px) scale(0.98);
+    opacity: 0;
+  }
+}
+
+.switcher-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.switcher-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(242, 244, 248, 0.55);
+}
+
+.switcher-panel h2 {
+  margin: 6px 0 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.switcher-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.switcher-card {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 8px 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  text-align: left;
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.switcher-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.switcher-card[aria-pressed="true"] {
+  border-color: #f2f4f8;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.switcher-card-art {
+  position: relative;
+  display: block;
+  height: 74px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.switcher-card-art i {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.switcher-card-art i:first-child {
+  width: 70%;
+  aspect-ratio: 1;
+  right: -14%;
+  top: -30%;
+}
+
+.switcher-card-art i:last-child {
+  width: 44%;
+  aspect-ratio: 1;
+  left: 10%;
+  bottom: -26%;
+}
+
+.switcher-card-num {
+  font-size: 11px;
+  opacity: 0.5;
+  padding: 0 4px;
+}
+
+.switcher-card b,
+.switcher-card small {
+  padding: 0 4px;
+}
+
+.switcher-card b {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.switcher-card small {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.switcher-foot {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: rgba(242, 244, 248, 0.45);
+}
+
+@media (max-width: 760px) {
+  .switcher-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .switcher-text small,
+  .switcher-count {
+    display: none;
+  }
+  .switcher {
+    bottom: 12px;
+  }
+}
